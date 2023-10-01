@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="8044be58-0bd7-4b79-b7dd-742cb50fc294" >
+		<http:listener-connection host="localhost" port="8081" protocol="HTTPS">
+			<tls:context >
+				<tls:key-store type="jks" path="keystore.jks" keyPassword="123456" password="123456" alias="key-alias"/>
+			</tls:context>
+		</http:listener-connection>
+	</http:listener-config>
+	<flow name="helloworldpablo-modFlow" doc:id="4806d7ad-8e6f-4fda-9005-1e96d286a675" >
+		<http:listener doc:name="Listener" doc:id="cfb18e4d-1bea-4775-833f-c4f349878f50" config-ref="HTTP_Listener_config" path="/holamundo"/>
+		<set-variable value="#[attributes.queryParams.lang]" doc:name="Set Variable" doc:id="457ef8b4-9f32-4e6a-ade1-d021dc79ce50" variableName="lang" mimeType="text/plain" encoding="UTF-8"/>
+		<choice doc:name="Choice" doc:id="228e7216-fca4-4885-a366-7aa5b233eeb6">
+			<when expression="#[vars.lang =='es']">
+				<set-payload value="¡Hola, mundo!" doc:name="Set Payload" doc:id="0d37a915-3db6-453d-a102-225202267020" mimeType="text/plain" encoding="UTF-8" />
+			</when>
+			<when expression="#[vars.lang =='en']">
+				<set-payload doc:name="Set Payload" doc:id="d9ae812c-33c3-4db0-8cb5-e0e05e46cc9d" value="Hello, World!"/>
+			</when>
+			<when expression="#[vars.lang == 'fr']">
+				<set-payload doc:name="Set Payload" doc:id="dab65e6f-dc36-410b-a750-c91a89d6eb75" value="Salut le monde!"/>
+			</when>
+			<when expression="#[vars.lang == 'de']">
+				<set-payload value="Hallo, Welt!" doc:name="Set Payload" doc:id="2fcb58b1-5917-4f1c-b454-fb6ffd157d98" />
+			</when>
+			<otherwise >
+				<set-payload value='&lt;h1&gt;ERROR&lt;/h1&gt;&lt;p&gt;Use "es","en","fr" or "de" como parámetro en la URL. &lt;br/&gt; Ejemplo: &lt;pre&gt;https://127.0.0.1:8081/holamundo?lang=en&lt;/pre&gt; &lt;/p&gt;' doc:name="Set Payload" doc:id="96da8b59-c8a7-455a-9ca4-009c5650fd88" mimeType="text/html" encoding="UTF-8"/>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="ea0a7774-44f9-47df-8c98-9383f063a235" message="#[vars.lang]"/>
+	</flow>
+</mule>
