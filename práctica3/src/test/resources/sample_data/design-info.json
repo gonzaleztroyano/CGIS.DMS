@@ -1,0 +1,9 @@
+{
+  "sampleData": {
+    "296a855d-55c5-4a02-9004-4784765670ed": {
+      "vars-DivideResult": "sample_data/defaultnumbertype.txt",
+      "vars-Numero2": "sample_data/java.dwl",
+      "vars-Numero1": "sample_data/java_1.dwl"
+    }
+  }
+}

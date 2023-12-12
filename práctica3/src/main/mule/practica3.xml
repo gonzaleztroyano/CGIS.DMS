@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:chatgpt="http://www.mulesoft.org/schema/mule/chatgpt" xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+http://www.mulesoft.org/schema/mule/chatgpt http://www.mulesoft.org/schema/mule/chatgpt/current/mule-chatgpt.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="509957d4-0a5e-46e1-a391-e311648616db" >
+		<http:listener-connection protocol="HTTPS" host="localhost" port="8081" >
+			<tls:context >
+				<tls:key-store type="jks" path="keystore.jks" alias="key-alias" keyPassword="12345678" password="12345678" />
+			</tls:context>
+		</http:listener-connection>
+	</http:listener-config>
+	<wsc:config name="Web_Service_Consumer_Config" doc:name="Web Service Consumer Config" doc:id="5cc28f55-bb07-4568-8319-4d9fdcbb76fe" >
+		<wsc:connection wsdlLocation="http://www.dneonline.com/calculator.asmx?wsdl" service="Calculator" port="CalculatorSoap12" address="http://www.dneonline.com/calculator.asmx" />
+	</wsc:config>
+	<flow name="ServicioSOAP-Externo" doc:id="2eeac828-68e5-4590-b7a3-94dd7acd47cb" tracking:enable-default-events="true">
+		<http:listener doc:name="Listener_ServicioSOAP-Externo" doc:id="6ba899d5-66ae-4947-9a88-c4bc3be0a8f4" config-ref="HTTP_Listener_config" path="/soap_externo"/>
+		<set-variable value="#[attributes.queryParams.operation]" doc:name="Set Variable - operation" doc:id="9b141743-d371-4e00-83f3-912804a514b3" variableName="operation"/>
+		<logger level="INFO" doc:name="Logger" doc:id="fa61a5f9-58bf-415d-a69f-4dd4a22ee419" message="Operation: #[vars.operation]"/>
+		<set-variable value="#[attributes.queryParams.op1]" doc:name="Set Variable - op1" doc:id="45dc7757-0835-410e-bfb5-f975d4960b57" variableName="op1"/>
+		<logger level="INFO" doc:name="Logger" doc:id="8208da29-fe7e-4a26-9ade-7ee10e6f7ae9" message="operando1: #[vars.op1]"/>
+		<set-variable value="#[attributes.queryParams.op2]" doc:name="Set Variable - op2" doc:id="31b43588-08ca-4844-922c-5c39443f5393" variableName="op2"/>
+		<logger level="INFO" doc:name="Logger" doc:id="ada46450-08df-4926-9725-f33984b3398f" message="operando2: #[vars.op2]"/>
+		<choice doc:name="Choice" doc:id="ddeea3c5-8137-4484-88a5-84da87e296ce" tracking:enable-default-events="true">
+			<when expression='#[vars.operation == "dividir"]'>
+				<ee:transform doc:name="Transform - Divide" doc:id="ea893f5c-3316-424e-b368-b3fdd566bd4c">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+ns ns0 http://tempuri.org/
+---
+{
+	ns0#Divide: {
+		ns0#intA: vars.op2 as Number,
+		ns0#intB: vars.op1 as Number
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<wsc:consume operation="Divide" doc:name="Consume - Divide" doc:id="ded94a10-c73e-45f0-abbb-87098d2a13b4" config-ref="Web_Service_Consumer_Config" />
+			</when>
+			<when expression='#[vars.operation == "multiplicar"]'>
+				<ee:transform doc:name="Transform - Multiply" doc:id="d03c4537-0bf5-48bc-bd06-30120b0ecb53">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+ns ns0 http://tempuri.org/
+---
+{
+	ns0#Multiply: {
+		ns0#intA: vars.op2 as Number,
+		ns0#intB: vars.op1 as Number
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<wsc:consume operation="Multiply" doc:name="Consume - Multiply" doc:id="cbf5bcd1-d1fc-4843-be0c-6eff64a46953" config-ref="Web_Service_Consumer_Config" />
+			</when>
+			<when expression='#[vars.operation == "sumar"]'>
+				<ee:transform doc:name="Transform - Add" doc:id="8cb48fd1-7963-49cd-912a-e184ed720ad6">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+ns ns0 http://tempuri.org/
+---
+{
+	ns0#Add: {
+		ns0#intA: vars.op2 as Number,
+		ns0#intB: vars.op1 as Number
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<wsc:consume operation="Add" doc:name="Consume - Sumar" doc:id="bcba9c19-4c6a-4b28-ace6-233a2dfe9eb4" config-ref="Web_Service_Consumer_Config" />
+			</when>
+			<when expression='#[vars.operation == "restar"]'>
+				<ee:transform doc:name="Transform - Subtract" doc:id="4d903904-aa15-4f25-be81-1d539f33a3b9">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+ns ns0 http://tempuri.org/
+---
+{
+	ns0#Subtract: {
+		ns0#intA: vars.op2 as Number,
+		ns0#intB: vars.op1 as Number
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<wsc:consume doc:name="Consume - Resta" doc:id="9f65bed0-6fee-44d1-8436-9dd5f2fef69e" config-ref="Web_Service_Consumer_Config" operation="Subtract"/>
+			</when>
+			<otherwise >
+				<set-payload value="Error en la petición" doc:name="Set Payload" doc:id="d68cae3b-1179-43c1-ae69-8f8b9ec66133" />
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="SOAP-EXTERN_NONVALID" doc:id="9fa7186d-3558-419e-ab1b-dd339efb860f" >
+		<http:listener doc:name="Listener - Soap Externo" doc:id="e76f32ba-b681-4a41-ad1b-6bfe385a215d" config-ref="HTTP_Listener_config" path="/soapexterno-nonvalid" outputMimeType="text/html"/>
+		<set-variable value="#[attributes.queryParams.numero1]" doc:name="Set Var - N1" doc:id="873598a9-c323-457f-a616-d2d2010fecc0" variableName="Numero1"/>
+		<set-variable value="#[attributes.queryParams.numero2]" doc:name="Set Var - N2" doc:id="86063840-8276-4472-9daf-dbba0a2fc708" variableName="Numero2" />
+		<ee:transform doc:name="Transform Message" doc:id="e224a176-8f89-4ce8-a69b-d2061eb787ff" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+ns ns0 http://tempuri.org/
+---
+{
+	ns0#Divide: {
+		ns0#intA: vars.Numero1,
+		ns0#intB: vars.Numero2
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<wsc:consume operation="Divide" doc:name="Consume" doc:id="37bf6fe4-3f49-4874-aa6c-0e15a0f06dde" config-ref="Web_Service_Consumer_Config"/>
+		<set-variable value="#[payload.body.DivideResponse.DivideResult]" doc:name="Set Variable" doc:id="153a5909-7ed5-4630-831e-ab3d65aa86ca" variableName="DivideResult" mimeType="text/plain"/>
+		<ee:transform doc:name="Transform Message" doc:id="296a855d-55c5-4a02-9004-4784765670ed" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+        output text/plain
+        ---
+        concat("<html>
+            <body>
+                <h2>Resumen de la Operación</h2>
+                <p>Número 1: #[payload.numero1]</p>
+                <p>Número 2: #[payload.numero2]</p>
+                <p>Resultado:" + vars.DivideResult + "</p>
+            </body>
+        </html>")]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-payload value="#[payload]" doc:name="Set Payload" doc:id="f05dadbe-8694-4066-b4b7-890839d65f5c" mimeType="text/html"/>
+	</flow>
+</mule>

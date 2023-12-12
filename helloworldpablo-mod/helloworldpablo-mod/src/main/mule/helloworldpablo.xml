@@ -29,7 +29,7 @@ http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/
 				<set-payload value="Hallo, Welt!" doc:name="Set Payload" doc:id="2fcb58b1-5917-4f1c-b454-fb6ffd157d98" />
 			</when>
 			<otherwise >
-				<set-payload value='&lt;h1&gt;ERROR&lt;/h1&gt;&lt;p&gt;Use "es","en","fr" or "de" como parámetro en la URL. &lt;br/&gt; Ejemplo: &lt;pre&gt;https://127.0.0.1:8081/holamundo?lang=en&lt;/pre&gt; &lt;/p&gt;' doc:name="Set Payload" doc:id="96da8b59-c8a7-455a-9ca4-009c5650fd88" mimeType="text/html" encoding="UTF-8"/>
+				<set-payload value='#["&lt;h1&gt;ERROR&lt;/h1&gt;&lt;p&gt;Use "es","en","fr" or "de" como parámetro en la URL. &lt;br/&gt; Ejemplo: &lt;pre&gt;https://127.0.0.1:8081/holamundo?lang=en&lt;/pre&gt; &lt;/p&gt;"]' doc:name="Set Payload" doc:id="96da8b59-c8a7-455a-9ca4-009c5650fd88" mimeType="text/html" encoding="UTF-8"/>
 			</otherwise>
 		</choice>
 		<logger level="INFO" doc:name="Logger" doc:id="ea0a7774-44f9-47df-8c98-9383f063a235" message="#[vars.lang]"/>
