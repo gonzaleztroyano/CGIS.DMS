@@ -20,6 +20,14 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
 	<wsc:config name="Web_Service_Consumer_Config" doc:name="Web Service Consumer Config" doc:id="5cc28f55-bb07-4568-8319-4d9fdcbb76fe" >
 		<wsc:connection wsdlLocation="http://www.dneonline.com/calculator.asmx?wsdl" service="Calculator" port="CalculatorSoap12" address="http://www.dneonline.com/calculator.asmx" />
 	</wsc:config>
+	<http:request-config name="Conf_HTTP_jsonplaceholder" doc:name="HTTP Request configuration" doc:id="f74c3cdb-0830-42ac-8cee-6a0a520ee5ea" >
+		<http:request-connection protocol="HTTPS" host="jsonplaceholder.typicode.com" port="443" />
+	</http:request-config>
+	<flow name="ServicioREST_Externo" doc:id="372c20eb-ac90-44cc-8fd8-995573d5a69e" >
+		<http:listener doc:name="Listener" doc:id="4df9c025-61ac-41b8-9fba-0a4ed782fa33" config-ref="HTTP_Listener_config" path="/rest_externo/person/{pid}"/>
+		<set-variable value="#[attributes.uriParams.pid]" doc:name="Set Variable - pid" doc:id="8aa67433-88d5-47a5-abb6-a332c265d233" variableName="pid"/>
+		<logger level="INFO" doc:name="Logger" doc:id="f71a7d2e-24e5-4929-832f-301fc7f599a6" message="pid: #[vars.pid]"/>
+	</flow>
 	<flow name="ServicioSOAP-Externo" doc:id="2eeac828-68e5-4590-b7a3-94dd7acd47cb" tracking:enable-default-events="true">
 		<http:listener doc:name="Listener_ServicioSOAP-Externo" doc:id="6ba899d5-66ae-4947-9a88-c4bc3be0a8f4" config-ref="HTTP_Listener_config" path="/soap_externo"/>
 		<set-variable value="#[attributes.queryParams.operation]" doc:name="Set Variable - operation" doc:id="9b141743-d371-4e00-83f3-912804a514b3" variableName="operation"/>
@@ -101,42 +109,5 @@ ns ns0 http://tempuri.org/
 				<set-payload value="Error en la petición" doc:name="Set Payload" doc:id="d68cae3b-1179-43c1-ae69-8f8b9ec66133" />
 			</otherwise>
 		</choice>
-	</flow>
-	<flow name="SOAP-EXTERN_NONVALID" doc:id="9fa7186d-3558-419e-ab1b-dd339efb860f" >
-		<http:listener doc:name="Listener - Soap Externo" doc:id="e76f32ba-b681-4a41-ad1b-6bfe385a215d" config-ref="HTTP_Listener_config" path="/soapexterno-nonvalid" outputMimeType="text/html"/>
-		<set-variable value="#[attributes.queryParams.numero1]" doc:name="Set Var - N1" doc:id="873598a9-c323-457f-a616-d2d2010fecc0" variableName="Numero1"/>
-		<set-variable value="#[attributes.queryParams.numero2]" doc:name="Set Var - N2" doc:id="86063840-8276-4472-9daf-dbba0a2fc708" variableName="Numero2" />
-		<ee:transform doc:name="Transform Message" doc:id="e224a176-8f89-4ce8-a69b-d2061eb787ff" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/xml
-ns ns0 http://tempuri.org/
----
-{
-	ns0#Divide: {
-		ns0#intA: vars.Numero1,
-		ns0#intB: vars.Numero2
-	}
-}]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<wsc:consume operation="Divide" doc:name="Consume" doc:id="37bf6fe4-3f49-4874-aa6c-0e15a0f06dde" config-ref="Web_Service_Consumer_Config"/>
-		<set-variable value="#[payload.body.DivideResponse.DivideResult]" doc:name="Set Variable" doc:id="153a5909-7ed5-4630-831e-ab3d65aa86ca" variableName="DivideResult" mimeType="text/plain"/>
-		<ee:transform doc:name="Transform Message" doc:id="296a855d-55c5-4a02-9004-4784765670ed" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-        output text/plain
-        ---
-        concat("<html>
-            <body>
-                <h2>Resumen de la Operación</h2>
-                <p>Número 1: #[payload.numero1]</p>
-                <p>Número 2: #[payload.numero2]</p>
-                <p>Resultado:" + vars.DivideResult + "</p>
-            </body>
-        </html>")]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<set-payload value="#[payload]" doc:name="Set Payload" doc:id="f05dadbe-8694-4066-b4b7-890839d65f5c" mimeType="text/html"/>
 	</flow>
 </mule>
