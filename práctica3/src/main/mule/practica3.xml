@@ -23,6 +23,33 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
 	<http:request-config name="Conf_HTTP_jsonplaceholder" doc:name="HTTP Request configuration" doc:id="f74c3cdb-0830-42ac-8cee-6a0a520ee5ea" >
 		<http:request-connection protocol="HTTPS" host="jsonplaceholder.typicode.com" port="443" />
 	</http:request-config>
+	<http:request-config name="HTTP_Request_configuration-INTERNO" doc:name="HTTP Request configuration" doc:id="22ab49ac-96fe-41bd-a043-e11680928310" >
+		<http:request-connection host="127.0.0.1" port="5000" />
+	</http:request-config>
+	<flow name="ServicioSOAP_Interno" doc:id="4e0a43da-c1ab-49f4-b8d7-9b1f9eda834a" >
+		<http:listener doc:name="Listener" doc:id="e162dd14-e91e-4a5e-ac6c-4a88d87e220a" config-ref="HTTP_Listener_config" path="/soap_interno/palabra/{palabra}"/>
+		<set-variable value="#[attributes.uriParams.palabra]" doc:name="Set Variable" doc:id="491be4d0-6d11-4569-82ba-3d1c0f452e12" variableName="palabra"/>
+		<logger level="INFO" doc:name="Logger" doc:id="f0b9f604-0c9f-4ebe-a7f3-b2d7e916baad" message="#[vars.palabra]"/>
+		<http:request method="GET" doc:name="Request1" doc:id="b82ea9df-8ee8-4779-8be9-669bd72afa3a" config-ref="HTTP_Request_configuration-INTERNO" path="/soap/palabras/{palabra}" outputMimeType="text/plain">
+			<http:uri-params><![CDATA[#[output application/java
+---
+{
+	"palabra" : vars.palabra
+}]]]></http:uri-params>
+		</http:request>
+	</flow>
+	<flow name="ServicioREST_Interno" doc:id="95411434-b973-4ac5-b6a2-ed30702bb84a">
+		<http:listener doc:name="Listener" doc:id="0cfa35b4-ab5e-415d-b173-9d7d519ea493" config-ref="HTTP_Listener_config" path="/rest_interno/palabra/{palabra}"/>
+		<set-variable value="#[attributes.uriParams.palabra]" doc:name="Set Variable" doc:id="c30ffe15-e8e3-435b-9eb5-86a89dd18458" variableName="palabra"/>
+		<logger level="INFO" doc:name="Logger" doc:id="f5d43108-007e-43c8-8291-125737bd309f" message="#[vars.palabra]"/>
+		<http:request method="GET" doc:name="Request" doc:id="8b2bb9b6-b47f-4308-a637-516c1c3f11a9" config-ref="HTTP_Request_configuration-INTERNO" path="/rest/palabras/{palabra}">
+			<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	"palabra" : vars.palabra
+}]]]></http:uri-params>
+		</http:request>
+	</flow>
 	<flow name="ServicioREST_Externo" doc:id="372c20eb-ac90-44cc-8fd8-995573d5a69e" >
 		<http:listener doc:name="Listener" doc:id="4df9c025-61ac-41b8-9fba-0a4ed782fa33" config-ref="HTTP_Listener_config" path="/rest_externo/person/{pid}"/>
 		<set-variable value="#[attributes.uriParams.pid]" doc:name="Set Variable - pid" doc:id="8aa67433-88d5-47a5-abb6-a332c265d233" variableName="pid"/>
