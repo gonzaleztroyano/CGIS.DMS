@@ -26,6 +26,9 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
 	<http:request-config name="HTTP_Request_configuration-INTERNO" doc:name="HTTP Request configuration" doc:id="22ab49ac-96fe-41bd-a043-e11680928310" >
 		<http:request-connection host="127.0.0.1" port="5000" />
 	</http:request-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="ed7d3d69-3544-4838-a527-eca154ffb1f4" >
+		<http:request-connection protocol="HTTPS" host="jsonplaceholder.typicode.com" port="443" />
+	</http:request-config>
 	<flow name="ServicioSOAP_Interno" doc:id="4e0a43da-c1ab-49f4-b8d7-9b1f9eda834a" >
 		<http:listener doc:name="Listener" doc:id="e162dd14-e91e-4a5e-ac6c-4a88d87e220a" config-ref="HTTP_Listener_config" path="/soap_interno/palabra/{palabra}"/>
 		<set-variable value="#[attributes.uriParams.palabra]" doc:name="Set Variable" doc:id="491be4d0-6d11-4569-82ba-3d1c0f452e12" variableName="palabra"/>
@@ -54,6 +57,13 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
 		<http:listener doc:name="Listener" doc:id="4df9c025-61ac-41b8-9fba-0a4ed782fa33" config-ref="HTTP_Listener_config" path="/rest_externo/person/{pid}"/>
 		<set-variable value="#[attributes.uriParams.pid]" doc:name="Set Variable - pid" doc:id="8aa67433-88d5-47a5-abb6-a332c265d233" variableName="pid"/>
 		<logger level="INFO" doc:name="Logger" doc:id="f71a7d2e-24e5-4929-832f-301fc7f599a6" message="pid: #[vars.pid]"/>
+		<http:request method="GET" doc:name="Request" doc:id="4d5b9d94-3408-4814-8c1a-ffc158e944ad" config-ref="HTTP_Request_configuration" path="/users/{user}">
+			<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	user : vars.pid
+}]]]></http:uri-params>
+		</http:request>
 	</flow>
 	<flow name="ServicioSOAP-Externo" doc:id="2eeac828-68e5-4590-b7a3-94dd7acd47cb" tracking:enable-default-events="true">
 		<http:listener doc:name="Listener_ServicioSOAP-Externo" doc:id="6ba899d5-66ae-4947-9a88-c4bc3be0a8f4" config-ref="HTTP_Listener_config" path="/soap_externo"/>
